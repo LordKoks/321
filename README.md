@@ -19,7 +19,7 @@
 - `Dockerfile`: Образ с интегрированным агентом.
 - `integration_map.md`: Детали интеграции.
 
-## Установка и запуск
+## Установка и запуск**ВАЖНО: Сделай репозиторий публичным в GitHub Settings > General > Visibility > Public, иначе папки не скачаются!**
 1. Клонируйте репозиторий: `git clone https://github.com/LordKoks/321.git`
 2. Соберите Docker образ: `docker build -t openhands-agent-server .`
 3. Запустите сервер: `docker run -d -p 8000:8000 openhands-agent-server`
