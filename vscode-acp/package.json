@@ -1,0 +1,185 @@
+{
+  "name": "vscode-acp",
+  "displayName": "VSCode ACP",
+  "description": "AI coding agents in VS Code via Agent Client Protocol (ACP). Chat with Claude, OpenCode, and other ACP-compatible agents directly in your editor.",
+  "version": "1.3.0",
+  "publisher": "omercnet",
+  "license": "MIT",
+  "icon": "assets/icon.png",
+  "preview": true,
+  "pricing": "Free",
+  "qna": "marketplace",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omercnet/vscode-acp"
+  },
+  "bugs": {
+    "url": "https://github.com/omercnet/vscode-acp/issues"
+  },
+  "homepage": "https://github.com/omercnet/vscode-acp#readme",
+  "engines": {
+    "vscode": "^1.74.0",
+    "node": "^22"
+  },
+  "categories": [
+    "AI",
+    "Chat",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "claude",
+    "opencode",
+    "acp",
+    "agent",
+    "chat",
+    "copilot",
+    "coding assistant",
+    "llm"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "The extension can run in untrusted workspaces but some features may be limited."
+    },
+    "virtualWorkspaces": true
+  },
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-acp.startChat",
+        "title": "Start Chat",
+        "category": "ACP",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "vscode-acp.newChat",
+        "title": "New Chat",
+        "category": "ACP",
+        "icon": "$(add)"
+      },
+      {
+        "command": "vscode-acp.clearChat",
+        "title": "Clear Chat",
+        "category": "ACP",
+        "icon": "$(clear-all)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vscode-acp",
+          "title": "VSCode ACP",
+          "icon": "assets/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "vscode-acp": [
+        {
+          "type": "webview",
+          "id": "vscode-acp.chatView",
+          "name": "Chat",
+          "icon": "$(comment-discussion)",
+          "contextualTitle": "ACP Chat"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "vscode-acp.newChat",
+          "when": "view == vscode-acp.chatView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vscode-acp.clearChat",
+          "when": "view == vscode-acp.chatView",
+          "group": "navigation@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "vscode-acp.startChat",
+          "when": "true"
+        },
+        {
+          "command": "vscode-acp.newChat",
+          "when": "true"
+        },
+        {
+          "command": "vscode-acp.clearChat",
+          "when": "true"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && node esbuild.js",
+    "check-types": "tsc --noEmit",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "pretest": "npm run compile-tests && npm run compile",
+    "test": "vscode-test",
+    "precoverage": "npm run compile-tests && npm run compile",
+    "coverage": "vscode-test --coverage --coverage-output coverage --coverage-reporter lcov --coverage-reporter text",
+    "coverage:html": "vscode-test --coverage --coverage-reporter html",
+    "lint": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"*.{json,md}\"",
+    "prepare": "husky",
+    "screenshot": "npx tsx scripts/screenshot.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
+    "@playwright/test": "^1.57.0",
+    "@types/jsdom": "^27.0.0",
+    "@types/marked": "^5.0.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "jsdom": "^27.3.0",
+    "lint-staged": "^16.2.7",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.7.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@agentclientprotocol/sdk": "^0.12.0",
+    "marked": "^17.0.1",
+    "vscode-jsonrpc": "^8.2.0"
+  },
+  "lint-staged": {
+    "*.{ts,js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,html}": [
+      "prettier --write"
+    ]
+  }
+}
