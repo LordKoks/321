@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #chat { height: 300px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
+        input { width: 80%; padding: 10px; }
+        button { padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>AI Agent Chat</h1>
+    <div id="chat"></div>
+    <input type="text" id="message" placeholder="Enter your message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const chat = document.getElementById('chat');
+        const messageInput = document.getElementById('message');
+
+        function sendMessage() {
+            const message = messageInput.value;
+            if (!message) return;
+
+            chat.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+            messageInput.value = '';
+
+            // Simulate response from agent (replace with actual API call)
+            setTimeout(() => {
+                chat.innerHTML += `<p><strong>Agent:</strong> Processing: ${message}</p>`;
+                chat.scrollTop = chat.scrollHeight;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
