@@ -15,7 +15,7 @@ class ServerInfo(BaseModel):
     uptime: float
     idle_time: float
     title: str = "OpenHands Agent Server"
-    version: str = version("openhands-agent-server")
+    version: str = "0.0.1" # version("openhands-agent-server")
     docs: str = "/docs"
     redoc: str = "/redoc"
 

@@ -2,37 +2,232 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Agent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Unified AI Agent</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        #chat { height: 300px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
-        input { width: 80%; padding: 10px; }
-        button { padding: 10px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            background-color: #252526;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .card {
+            background-color: #2d2d2d;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        h1 { margin: 0; font-size: 20px; font-weight: 600; }
+        h2 { margin: 0 0 8px 0; font-size: 18px; font-weight: 500; }
+        p { margin: 0; color: #aaa; font-size: 14px; line-height: 1.5; }
+        
+        button {
+            background-color: #007acc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:active { background-color: #005a9e; transform: translateY(1px); }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: #3c3c3c;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: #007acc; }
+
+        .status {
+            font-size: 14px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+        .status.connecting { color: #ffb74d; }
+        .status.connected { color: #66bb6a; }
+        .status.disconnected { color: #ef5350; }
+
+        #chat-screen {
+            padding: 0;
+            height: 100%;
+            display: none; /* Initially hidden */
+            flex-direction: column;
+        }
+        
+        #agent-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background-color: #1e1e1e;
+        }
+        
+        .toolbar {
+            padding: 8px;
+            background-color: #252526;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #333;
+        }
+        .toolbar button {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        .disconnect-btn {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
-    <h1>AI Agent Chat</h1>
-    <div id="chat"></div>
-    <input type="text" id="message" placeholder="Enter your message">
-    <button onclick="sendMessage()">Send</button>
+    <div id="setup-screen" class="container">
+        <header style="width: 100%; box-sizing: border-box; margin-bottom: 20px; background: transparent; border: none; box-shadow: none;">
+            <div style="width: 64px; height: 64px; background-color: #007acc; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+            </div>
+            <h1>Unified AI Agent</h1>
+        </header>
+        
+        <div class="card">
+            <h2>Connect to Server</h2>
+            <p>Enter your computer's local IP address (e.g., 192.168.1.5)</p>
+            
+            <div style="text-align: left; width: 100%;">
+                <label style="font-size: 12px; color: #888; margin-bottom: 4px; display: block;">Server URL</label>
+                <input type="text" id="server-url" placeholder="http://192.168.1.x:8000" value="http://192.168.1.">
+            </div>
+            
+            <button onclick="connect()" id="connect-btn">Connect</button>
+            <div id="status" class="status"></div>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 12px; color: #666;">
+            Ensure your phone and computer are on the same Wi-Fi network.
+        </p>
+    </div>
+    
+    <div id="chat-screen">
+        <header style="padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600;">Agent Workspace</span>
+            <button onclick="disconnect()" class="disconnect-btn" style="width: auto; padding: 6px 12px; font-size: 12px;">Disconnect</button>
+        </header>
+        <iframe id="agent-frame"></iframe>
+    </div>
 
     <script>
-        const chat = document.getElementById('chat');
-        const messageInput = document.getElementById('message');
+        const statusEl = document.getElementById('status');
+        const setupScreen = document.getElementById('setup-screen');
+        const chatScreen = document.getElementById('chat-screen');
+        const agentFrame = document.getElementById('agent-frame');
+        const serverInput = document.getElementById('server-url');
+        const connectBtn = document.getElementById('connect-btn');
 
-        function sendMessage() {
-            const message = messageInput.value;
-            if (!message) return;
+        // Load saved URL
+        const savedUrl = localStorage.getItem('agent_server_url');
+        if (savedUrl) {
+            serverInput.value = savedUrl;
+        }
 
-            chat.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
-            messageInput.value = '';
+        async function connect() {
+            let url = serverInput.value.trim().replace(/\/$/, '');
+            if (!url.startsWith('http')) {
+                url = 'http://' + url;
+            }
+            // Add port if missing
+            if ((url.match(/:/g) || []).length < 2) {
+                 url += ':8000';
+            }
+            
+            serverInput.value = url;
 
-            // Simulate response from agent (replace with actual API call)
-            setTimeout(() => {
-                chat.innerHTML += `<p><strong>Agent:</strong> Processing: ${message}</p>`;
-                chat.scrollTop = chat.scrollHeight;
-            }, 1000);
+            statusEl.textContent = 'Connecting...';
+            statusEl.className = 'status connecting';
+            connectBtn.disabled = true;
+            connectBtn.style.opacity = '0.7';
+
+            try {
+                // Try to fetch options or head to check connectivity
+                // We use a timeout to fail fast
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                
+                try {
+                    await fetch(`${url}/api/options`, { 
+                        method: 'OPTIONS', 
+                        signal: controller.signal,
+                        mode: 'no-cors' // We just want to know if it connects, not read response
+                    });
+                } catch (e) {
+                    // Ignore network errors here, proceed to try loading iframe
+                    // or treat as failure if strict
+                    console.log("Health check warning:", e);
+                }
+                clearTimeout(timeoutId);
+                
+                localStorage.setItem('agent_server_url', url);
+                
+                // Show chat screen
+                setupScreen.style.display = 'none';
+                chatScreen.style.display = 'flex';
+                
+                // Load iframe
+                agentFrame.src = url;
+                
+                statusEl.textContent = '';
+                statusEl.className = 'status';
+            } catch (e) {
+                statusEl.textContent = 'Connection failed. Check IP and Wi-Fi.';
+                statusEl.className = 'status disconnected';
+            } finally {
+                connectBtn.disabled = false;
+                connectBtn.style.opacity = '1';
+            }
+        }
+
+        function disconnect() {
+            setupScreen.style.display = 'flex';
+            chatScreen.style.display = 'none';
+            agentFrame.src = 'about:blank';
+            statusEl.textContent = '';
         }
     </script>
 </body>
