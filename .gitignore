@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm/
+
+# Android/Mobile
+android/app/build/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
+
+# Virtual environments
+.venv/
+
+# OS
+Thumbs.db
+.env
+.env.local
+
+# Build artifacts
+dist/
+build/
+*.whl
+
+# Logs
+*.log
+
+# MetaGPT specific
+.metagpt/
+runs/
+outputs/
