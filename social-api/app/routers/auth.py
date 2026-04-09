@@ -8,7 +8,7 @@ from app.auth.jwt import hash_password, verify_password, create_access_token, cr
 from app.schemas.user import UserCreate, UserRead, TokenResponse, RefreshRequest
 import uuid
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter()
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)

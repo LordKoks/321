@@ -64,3 +64,41 @@ async def refresh_x_token(refresh_token: str) -> dict:
         )
         resp.raise_for_status()
         return resp.json()
+
+
+class XOAuth:
+    def __init__(self, client_id: Optional[str], client_secret: Optional[str], redirect_uri: str):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
+
+    def get_auth_url(self, state: str) -> tuple[str, str]:
+        verifier = _generate_code_verifier()
+        challenge = _generate_code_challenge(verifier)
+        params = {
+            "response_type": "code",
+            "client_id": self.client_id,
+            "redirect_uri": self.redirect_uri,
+            "scope": X_SCOPES,
+            "state": state,
+            "code_challenge": challenge,
+            "code_challenge_method": "S256",
+        }
+        url = f"{X_AUTH_URL}?{urllib.parse.urlencode(params)}"
+        return url, verifier
+
+    async def exchange_code(self, code: str, code_verifier: str) -> dict:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                X_TOKEN_URL,
+                data={
+                    "code": code,
+                    "grant_type": "authorization_code",
+                    "redirect_uri": self.redirect_uri,
+                    "code_verifier": code_verifier,
+                },
+                auth=(self.client_id, self.client_secret),
+            )
+            resp.raise_for_status()
+            return resp.json()
+

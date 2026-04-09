@@ -51,3 +51,39 @@ async def refresh_google_token(refresh_token: str) -> dict:
         )
         resp.raise_for_status()
         return resp.json()
+
+
+class YouTubeOAuth:
+    def __init__(self, client_id: Optional[str], client_secret: Optional[str], redirect_uri: str):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
+
+    def get_auth_url(self, state: Optional[str] = None) -> str:
+        params = {
+            "client_id": self.client_id,
+            "redirect_uri": self.redirect_uri,
+            "scope": YOUTUBE_SCOPE,
+            "response_type": "code",
+            "access_type": "offline",
+            "prompt": "consent",
+        }
+        if state:
+            params["state"] = state
+        return f"{GOOGLE_AUTH_URL}?{urllib.parse.urlencode(params)}"
+
+    async def exchange_code(self, code: str) -> dict:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                GOOGLE_TOKEN_URL,
+                data={
+                    "code": code,
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "redirect_uri": self.redirect_uri,
+                    "grant_type": "authorization_code",
+                },
+            )
+            resp.raise_for_status()
+            return resp.json()
+

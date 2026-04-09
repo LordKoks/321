@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.post import Post, PostTarget, PostStatus, PostTargetStatus
@@ -13,6 +14,8 @@ from app.models.user import User
 
 router = APIRouter()
 
+_POST_QUERY = select(Post).options(selectinload(Post.targets))
+
 
 @router.get("/", response_model=list[PostOut])
 async def list_posts(
@@ -20,7 +23,7 @@ async def list_posts(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Post).where(Post.user_id == current_user.id).order_by(Post.created_at.desc())
+        _POST_QUERY.where(Post.user_id == current_user.id).order_by(Post.created_at.desc())
     )
     return result.scalars().all()
 
@@ -41,7 +44,7 @@ async def create_post(
     db.add(post)
     await db.flush()
 
-    for account_id in data.target_account_ids:
+    for account_id in (data.target_account_ids or []):
         # verify ownership
         res = await db.execute(
             select(SocialAccount).where(
@@ -55,8 +58,10 @@ async def create_post(
         db.add(target)
 
     await db.commit()
-    await db.refresh(post)
-    return post
+    result = await db.execute(
+        _POST_QUERY.where(Post.id == post.id)
+    )
+    return result.scalar_one()
 
 
 @router.get("/{post_id}", response_model=PostOut)
@@ -66,7 +71,7 @@ async def get_post(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Post).where(Post.id == post_id, Post.user_id == current_user.id)
+        _POST_QUERY.where(Post.id == post_id, Post.user_id == current_user.id)
     )
     post = result.scalar_one_or_none()
     if not post:
@@ -82,7 +87,7 @@ async def update_post(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Post).where(Post.id == post_id, Post.user_id == current_user.id)
+        _POST_QUERY.where(Post.id == post_id, Post.user_id == current_user.id)
     )
     post = result.scalar_one_or_none()
     if not post:
@@ -91,8 +96,10 @@ async def update_post(
         setattr(post, field, value)
     post.updated_at = datetime.now(timezone.utc)
     await db.commit()
-    await db.refresh(post)
-    return post
+    result = await db.execute(
+        _POST_QUERY.where(Post.id == post_id)
+    )
+    return result.scalar_one()
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -109,3 +116,4 @@ async def delete_post(
         raise HTTPException(status_code=404, detail="Post not found")
     await db.delete(post)
     await db.commit()
+
