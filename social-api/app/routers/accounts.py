@@ -1,5 +1,6 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -8,7 +9,7 @@ from app.models.social_account import SocialAccount, Platform
 from app.schemas.social_account import SocialAccountCreate, SocialAccountOut
 from app.auth.dependencies import get_current_user
 from app.models.user import User
-from app.core.token_manager import TokenManager
+from app.core.token_manager import token_manager
 from app.integrations.vk.oauth import VKOAuth
 from app.integrations.x.oauth import XOAuth
 from app.integrations.ok.oauth import OKOAuth
@@ -17,7 +18,6 @@ from app.config import get_settings
 
 router = APIRouter()
 settings = get_settings()
-token_manager = TokenManager(settings.SECRET_KEY)
 
 
 @router.get("/", response_model=list[SocialAccountOut])
@@ -183,3 +183,54 @@ async def youtube_callback(
     await db.commit()
     await db.refresh(account)
     return {"id": account.id, "platform": "youtube"}
+
+
+# ── Telegram ─────────────────────────────────────────────────────────────────
+
+@router.post("/telegram/send-code")
+async def telegram_send_code(
+    phone: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Initiate Telegram phone-based authentication.
+    Returns session string and phone_code_hash to be passed to /telegram/verify.
+    """
+    from app.integrations.telegram.api import telegram_integration
+    result = await telegram_integration.start_phone_auth(phone)
+    return {
+        "session": result["session"],
+        "phone_code_hash": result["phone_code_hash"],
+        "user_id": str(current_user.id),
+    }
+
+
+@router.post("/telegram/verify")
+async def telegram_verify(
+    phone: str = Body(...),
+    code: str = Body(...),
+    session: str = Body(...),
+    phone_code_hash: str = Body(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Complete Telegram auth, save encrypted session string as the account token.
+    """
+    from app.integrations.telegram.api import telegram_integration
+    new_session = await telegram_integration.complete_phone_auth(
+        phone, code, session, phone_code_hash
+    )
+    encrypted = token_manager.encrypt(new_session)
+    account = SocialAccount(
+        user_id=current_user.id,
+        platform=Platform.telegram,
+        account_id=phone,
+        encrypted_token=encrypted,
+        token_type="session",
+    )
+    db.add(account)
+    await db.commit()
+    await db.refresh(account)
+    return {"id": account.id, "platform": "telegram"}
+

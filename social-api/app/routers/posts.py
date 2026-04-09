@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
-from app.models.post import Post, PostTarget, PostStatus
+from app.models.post import Post, PostTarget, PostStatus, PostTargetStatus
 from app.models.social_account import SocialAccount
 from app.schemas.post import PostCreate, PostOut, PostUpdate
 from app.auth.dependencies import get_current_user
@@ -51,7 +51,7 @@ async def create_post(
         )
         if not res.scalar_one_or_none():
             raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
-        target = PostTarget(post_id=post.id, social_account_id=account_id, status=PostStatus.scheduled)
+        target = PostTarget(post_id=post.id, social_account_id=account_id, status=PostTargetStatus.pending)
         db.add(target)
 
     await db.commit()

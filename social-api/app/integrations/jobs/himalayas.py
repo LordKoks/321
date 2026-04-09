@@ -42,10 +42,6 @@ class HimalayasClient:
             params["category"] = category
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = client.get(BASE_URL, params=params)
-            # httpx async context requires await — use sync for simplicity in tasks
-            # but we expose an async interface consistent with the rest of the codebase
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = await client.get(BASE_URL, params=params)
             resp.raise_for_status()
             return resp.json()

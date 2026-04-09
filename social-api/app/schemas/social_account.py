@@ -19,6 +19,9 @@ class SocialAccountRead(BaseModel):
     model_config = {"from_attributes": True}
 
 
+SocialAccountOut = SocialAccountRead
+
+
 class SocialAccountCreate(BaseModel):
     platform: Platform
     account_id: str

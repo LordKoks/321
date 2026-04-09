@@ -19,6 +19,9 @@ class AnalyticsRead(BaseModel):
     model_config = {"from_attributes": True}
 
 
+AnalyticsOut = AnalyticsRead
+
+
 class AnalyticsSummary(BaseModel):
     total_likes: int
     total_views: int

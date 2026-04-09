@@ -43,3 +43,6 @@ class PostRead(BaseModel):
     targets: List[PostTargetRead] = []
 
     model_config = {"from_attributes": True}
+
+
+PostOut = PostRead
