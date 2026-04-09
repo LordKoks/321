@@ -35,9 +35,18 @@ class Settings(BaseSettings):
     PROXY_USER: Optional[str] = None
     PROXY_PASSWORD: Optional[str] = None
 
+    # Job APIs
+    RAPIDAPI_KEY: Optional[str] = None          # Glassdoor via RapidAPI (100 req/mo free)
+    THEIRSTACK_API_KEY: Optional[str] = None    # TheirStack (200 credits/mo free)
+    SERPAPI_KEY: Optional[str] = None           # SerpApi Google Jobs (100 req/mo free)
+
     class Config:
         env_file = ".env"
         extra = "ignore"
 
 
 settings = Settings()
+
+
+def get_settings() -> Settings:
+    return settings
