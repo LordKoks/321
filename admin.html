@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="auto">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — AI.Studio / LordKoks/321</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    (function(){
+      var t = localStorage.getItem('theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
+  <style>
+    /* =========================================================
+       DESIGN TOKENS (shared with index.html)
+    ========================================================= */
+    :root {
+      --bg:          #F9F9F7;
+      --surface:     #FFFFFF;
+      --border:      #000000;
+      --text:        #0A0A0A;
+      --text-muted:  #6B7280;
+      --coral:       #FF5A5F;
+      --mint:        #00D084;
+      --blue:        #3B82F6;
+      --amber:       #F59E0B;
+      --purple:      #8B5CF6;
+      --hard-shadow: 0px 6px 0px 0px #000000;
+      --radius:      16px;
+      --border-w:    2px;
+      --dot-opacity: 0.07;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:         #0A0A0A;
+        --surface:    #141414;
+        --text:       #F9F9F7;
+        --text-muted: #6B7280;
+      }
+    }
+    [data-theme="dark"] {
+      --bg:         #0A0A0A;
+      --surface:    #141414;
+      --text:       #F9F9F7;
+      --text-muted: #6B7280;
+    }
+
+    /* =========================================================
+       RESET & BASE
+    ========================================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: var(--dot-opacity);
+      pointer-events: none;
+      z-index: 0;
+    }
+    h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+
+    /* =========================================================
+       LAYOUT
+    ========================================================= */
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 48px; }
+    @media (max-width: 768px) { .container { padding: 0 20px; } }
+
+    section { padding: 64px 0; }
+
+    /* =========================================================
+       NAVBAR
+    ========================================================= */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: var(--bg);
+      border-bottom: var(--border-w) solid var(--border);
+      padding: 10px 0;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-badge {
+      background: var(--coral);
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .nav-links-admin {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    .nav-links-admin a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .nav-links-admin a:hover { color: var(--text); }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .theme-toggle {
+      width: 32px; height: 32px;
+      border: var(--border-w) solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 2px 2px 0px var(--border);
+    }
+    .theme-toggle:hover { background: var(--text); color: var(--bg); }
+    .theme-toggle svg { width: 14px; height: 14px; }
+    .theme-toggle .icon-sun  { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .theme-toggle .icon-sun  { display: block; }
+      :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
+    }
+
+    /* =========================================================
+       HERO BANNER
+    ========================================================= */
+    .admin-hero {
+      padding: 48px 0 40px;
+      border-bottom: var(--border-w) solid var(--border);
+    }
+    .admin-hero-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: start;
+    }
+    .admin-hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: var(--border-w) solid var(--border);
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+      box-shadow: 3px 3px 0px var(--border);
+    }
+    .admin-hero-tag .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--coral);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .admin-h1 {
+      font-size: clamp(28px, 4vw, 52px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .admin-h1 span {
+      background: linear-gradient(90deg, var(--coral), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .admin-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.6;
+    }
+    .hero-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 180px;
+    }
+    .hero-stat-item {
+      border: var(--border-w) solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--hard-shadow);
+      padding: 14px 18px;
+      text-align: center;
+    }
+    .hero-stat-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 600;
+      display: block;
+    }
+    .hero-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    @media (max-width: 700px) {
+      .admin-hero-inner { grid-template-columns: 1fr; }
+      .hero-stats { flex-direction: row; flex-wrap: wrap; }
+    }
+
+    /* =========================================================
+       SECTION HEADERS
+    ========================================================= */
+    .section-hdr {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .section-hdr h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .section-hdr .meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* =========================================================
+       LOCKED DESCRIPTION BLOCKS — "cannot be changed"
+       Displayed as CODE-LIKE READ-ONLY panels
+    ========================================================= */
+    .locked-panel {
+      border: var(--border-w) solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--hard-shadow);
+      overflow: hidden;
+      margin-bottom: 24px;
+      /* Visual "lock" — no pointer events on content area */
+    }
+    .locked-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-bottom: var(--border-w) solid var(--border);
+      background: var(--bg);
+    }
+    .locked-panel-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .locked-panel-title svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .locked-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      user-select: none;
+    }
+    .locked-label svg { width: 9px; height: 9px; }
+    .locked-body {
+      padding: 20px 18px;
+      pointer-events: none; /* panel body cannot be interacted with */
+      user-select: none;    /* text cannot be selected/copied — truly locked */
+    }
+    .locked-body p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 12px;
+    }
+    .locked-body p:last-child { margin-bottom: 0; }
+    .locked-body strong { color: var(--text); font-weight: 600; }
+    .locked-body .kv-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 16px;
+      margin: 10px 0;
+    }
+    .locked-body .kv-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .locked-body .kv-val {
+      font-size: 12px;
+      color: var(--text);
+    }
+    .locked-body .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .locked-body .tech-tag {
+      padding: 2px 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    /* Color accent strip on left */
+    .locked-panel.accent-blue  { border-left: 4px solid var(--blue); }
+    .locked-panel.accent-mint  { border-left: 4px solid var(--mint); }
+    .locked-panel.accent-amber { border-left: 4px solid var(--amber); }
+    .locked-panel.accent-coral { border-left: 4px solid var(--coral); }
+    .locked-panel.accent-purple { border-left: 4px solid var(--purple); }
+
+    /* Panels in 2-column grid */
+    .panels-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .panels-grid { grid-template-columns: 1fr; }
+    }
+
+    /* =========================================================
+       LAUNCH CONTROLS
+    ========================================================= */
+    .launch-card {
+      border: var(--border-w) solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--hard-shadow);
+      overflow: hidden;
+    }
+    .launch-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: var(--border-w) solid var(--border);
+      background: var(--bg);
+    }
+    .launch-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+    .launch-card-title .icon-wrap {
+      width: 34px; height: 34px;
+      border: var(--border-w) solid var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .status-running .status-dot { background: var(--mint); animation: pulse 1.5s infinite; }
+    .status-stopped .status-dot { background: var(--coral); }
+    .status-checking .status-dot { background: var(--amber); animation: pulse 0.8s infinite; }
+
+    .launch-card-body { padding: 18px; }
+
+    /* Command block */
+    .cmd-block {
+      border: var(--border-w) solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .cmd-block:last-child { margin-bottom: 0; }
+    .cmd-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      background: var(--bg);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text);
+      transition: background 0.1s, color 0.1s;
+    }
+    .copy-btn:hover { background: var(--text); color: var(--bg); }
+    .copy-btn.copied { background: var(--mint); color: #fff; border-color: var(--mint); }
+    .copy-btn svg { width: 10px; height: 10px; }
+    .cmd-code {
+      padding: 12px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--text);
+      white-space: pre;
+      overflow-x: auto;
+      background: transparent;
+    }
+
+    /* Open-link buttons */
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .btn-open {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      border: var(--border-w) solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: box-shadow 0.1s, transform 0.1s, background 0.1s, color 0.1s;
+      color: var(--text);
+      background: transparent;
+    }
+    .btn-open svg { width: 14px; height: 14px; }
+    .btn-open:hover {
+      background: var(--text);
+      color: var(--bg);
+      box-shadow: 3px 3px 0px var(--blue);
+    }
+    .btn-open.primary {
+      background: var(--border);
+      color: #fff;
+      box-shadow: 4px 4px 0px var(--coral);
+    }
+    .btn-open.primary:hover {
+      box-shadow: 2px 2px 0px var(--coral);
+      transform: translate(2px, 2px);
+    }
+
+    /* =========================================================
+       SERVICE STATUS TABLE
+    ========================================================= */
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: var(--border-w) solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--hard-shadow);
+    }
+    .status-table thead tr {
+      background: var(--bg);
+      border-bottom: var(--border-w) solid var(--border);
+    }
+    .status-table th {
+      padding: 10px 14px;
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .status-table td {
+      padding: 11px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      background: var(--surface);
+      vertical-align: middle;
+    }
+    .status-table tbody tr:last-child td { border-bottom: none; }
+    .status-table tbody tr:hover td { background: var(--bg); }
+    .svc-name {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .svc-icon { font-size: 16px; }
+    .svc-port {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .svc-url a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .svc-url a:hover { text-decoration: underline; }
+    .svc-status { min-width: 110px; }
+    .ping-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+    .ping-indicator .d { width: 8px; height: 8px; border-radius: 50%; border: 1px solid currentColor; }
+    .ping-ok    { color: var(--mint); }
+    .ping-ok .d    { background: var(--mint); }
+    .ping-err   { color: var(--coral); }
+    .ping-err .d   { background: var(--coral); }
+    .ping-wait  { color: var(--amber); }
+    .ping-wait .d  { background: var(--amber); animation: pulse 1s infinite; }
+    .check-all-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: var(--border-w) solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      cursor: pointer;
+      box-shadow: 3px 3px 0px var(--border);
+      transition: background 0.1s, color 0.1s;
+      color: var(--text);
+    }
+    .check-all-btn:hover { background: var(--text); color: var(--bg); }
+    .check-all-btn svg { width: 13px; height: 13px; }
+
+    /* =========================================================
+       API ROUTES REFERENCE
+    ========================================================= */
+    .route-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      flex-wrap: wrap;
+    }
+    .route-row:last-child { border-bottom: none; }
+    .method-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      min-width: 44px;
+      text-align: center;
+    }
+    .method-get    { background: #DBEAFE; color: #1D4ED8; }
+    .method-post   { background: #D1FAE5; color: #065F46; }
+    .method-put    { background: #FEF3C7; color: #92400E; }
+    .method-delete { background: #FEE2E2; color: #991B1B; }
+    [data-theme="dark"] .method-get    { background: #1e3a5f; color: #60a5fa; }
+    [data-theme="dark"] .method-post   { background: #064e3b; color: #34d399; }
+    [data-theme="dark"] .method-put    { background: #451a03; color: #fbbf24; }
+    [data-theme="dark"] .method-delete { background: #450a0a; color: #f87171; }
+    .route-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      flex: 1;
+      color: var(--text);
+    }
+    .route-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      min-width: 160px;
+    }
+
+    /* =========================================================
+       FOOTER
+    ========================================================= */
+    footer {
+      border-top: var(--border-w) solid var(--border);
+      padding: 28px 0;
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .footer-copy { font-size: 12px; color: var(--text-muted); }
+
+    /* =========================================================
+       UTILITY
+    ========================================================= */
+    .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .divider { border: none; border-top: var(--border-w) solid var(--border); margin: 0; }
+  </style>
+</head>
+<body>
+
+  <!-- =====================================================
+       NAVBAR
+  ===================================================== -->
+  <nav>
+    <div class="container nav-inner">
+      <a href="index.html" class="nav-logo">
+        ◆ AI.Studio
+        <span class="admin-badge">Admin</span>
+      </a>
+      <ul class="nav-links-admin">
+        <li><a href="#launch">Запуск</a></li>
+        <li><a href="#status">Статус</a></li>
+        <li><a href="#encyclopedia">Энциклопедия</a></li>
+        <li><a href="#api-routes">API Routes</a></li>
+        <li><a href="index.html">← Landing</a></li>
+        <li><a href="https://github.com/LordKoks/321" target="_blank" rel="noopener">GitHub ↗</a></li>
+      </ul>
+      <div class="nav-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Тема">
+          <i data-lucide="sun"  class="icon-sun"></i>
+          <i data-lucide="moon" class="icon-moon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- =====================================================
+       HERO
+  ===================================================== -->
+  <div class="admin-hero">
+    <div class="container">
+      <div class="admin-hero-inner">
+        <div>
+          <div class="admin-hero-tag">
+            <span class="dot"></span>
+            LordKoks / 321 · Admin Control Center
+          </div>
+          <h1 class="admin-h1">Единая панель<br><span>управления проектом</span></h1>
+          <p class="admin-subtitle">
+            Полная система запуска, мониторинга и документации для всех компонентов репозитория
+            <strong>LordKoks/321</strong>: лендинг AI Agent Orchestrator, Social Media API сервер,
+            Docker-инфраструктура, фоновые задачи Celery, база данных и кеш.
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat-item">
+            <span class="hero-stat-num" style="color:var(--blue)">6</span>
+            <span class="hero-stat-label">Docker-сервисов</span>
+          </div>
+          <div class="hero-stat-item">
+            <span class="hero-stat-num" style="color:var(--mint)">18+</span>
+            <span class="hero-stat-label">API endpoints</span>
+          </div>
+          <div class="hero-stat-item">
+            <span class="hero-stat-num" style="color:var(--amber)">5</span>
+            <span class="hero-stat-label">Соцсетей</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SECTION: БЫСТРЫЙ ЗАПУСК
+  ===================================================== -->
+  <section id="launch">
+    <div class="container">
+      <div class="section-hdr">
+        <h2>🚀 Запуск всего проекта</h2>
+        <span class="meta">Команды для запуска</span>
+      </div>
+
+      <div class="panels-grid" style="margin-bottom:28px">
+
+        <!-- Launch: Full stack -->
+        <div class="launch-card">
+          <div class="launch-card-header">
+            <div class="launch-card-title">
+              <span class="icon-wrap">🐳</span>
+              Полный стек (рекомендуется)
+            </div>
+            <span class="status-badge"><span class="status-dot" style="background:var(--mint)"></span> Docker Compose</span>
+          </div>
+          <div class="launch-card-body">
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Шаг 1 — перейти в папку и создать .env</span>
+                <button class="copy-btn" data-cmd="cd social-api && cp .env.example .env">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">cd social-api
+cp .env.example .env
+# Отредактируйте .env: заполните SECRET_KEY и ключи API</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Шаг 2 — собрать и запустить</span>
+                <button class="copy-btn" data-cmd="docker compose up --build -d">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">docker compose up --build -d</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Шаг 3 — проверить логи</span>
+                <button class="copy-btn" data-cmd="docker compose logs -f api">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">docker compose logs -f api</div>
+            </div>
+            <div class="btn-row">
+              <a href="http://localhost:80" target="_blank" class="btn-open primary">
+                <i data-lucide="globe"></i> Открыть :80 (Nginx)
+              </a>
+              <a href="http://localhost:8000/docs" target="_blank" class="btn-open">
+                <i data-lucide="book-open"></i> Swagger Docs :8000
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launch: Landing page -->
+        <div class="launch-card">
+          <div class="launch-card-header">
+            <div class="launch-card-title">
+              <span class="icon-wrap">🌐</span>
+              Landing Page (index.html)
+            </div>
+            <span class="status-badge"><span class="status-dot" style="background:var(--blue)"></span> Static HTML</span>
+          </div>
+          <div class="launch-card-body">
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Открыть в браузере (файл)</span>
+                <button class="copy-btn" data-cmd="open index.html">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">open index.html  # macOS
+# или просто дважды кликните на index.html</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Локальный dev-сервер (Python)</span>
+                <button class="copy-btn" data-cmd="python3 -m http.server 3000">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">python3 -m http.server 3000
+# Откройте: http://localhost:3000/index.html</div>
+            </div>
+            <div class="btn-row">
+              <a href="index.html" class="btn-open primary">
+                <i data-lucide="layout"></i> Открыть Landing
+              </a>
+              <a href="http://localhost:3000/index.html" target="_blank" class="btn-open">
+                <i data-lucide="external-link"></i> :3000 Dev Server
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launch: Backend only (local dev) -->
+        <div class="launch-card">
+          <div class="launch-card-header">
+            <div class="launch-card-title">
+              <span class="icon-wrap">⚡</span>
+              API сервер (без Docker)
+            </div>
+            <span class="status-badge"><span class="status-dot" style="background:var(--amber)"></span> Local Python</span>
+          </div>
+          <div class="launch-card-body">
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Установить зависимости</span>
+                <button class="copy-btn" data-cmd="cd social-api && pip install -e .">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">cd social-api
+pip install -e .</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Запустить FastAPI + Uvicorn</span>
+                <button class="copy-btn" data-cmd="uvicorn app.main:app --reload --port 8000">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">uvicorn app.main:app --reload --port 8000</div>
+            </div>
+            <div class="btn-row">
+              <a href="http://localhost:8000/health" target="_blank" class="btn-open primary">
+                <i data-lucide="heart-pulse"></i> /health check
+              </a>
+              <a href="http://localhost:8000/docs" target="_blank" class="btn-open">
+                <i data-lucide="book-open"></i> Swagger
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launch: Celery -->
+        <div class="launch-card">
+          <div class="launch-card-header">
+            <div class="launch-card-title">
+              <span class="icon-wrap">⚙️</span>
+              Celery Worker + Beat
+            </div>
+            <span class="status-badge"><span class="status-dot" style="background:var(--purple)"></span> Background Tasks</span>
+          </div>
+          <div class="launch-card-body">
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Запустить воркер</span>
+                <button class="copy-btn" data-cmd="celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">cd social-api
+celery -A app.tasks.celery_app worker \
+  --loglevel=info --concurrency=4</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Запустить scheduler (beat)</span>
+                <button class="copy-btn" data-cmd="celery -A app.tasks.celery_app beat --loglevel=info">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">cd social-api
+celery -A app.tasks.celery_app beat --loglevel=info</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Мониторинг задач (Flower)</span>
+                <button class="copy-btn" data-cmd="celery -A app.tasks.celery_app flower --port=5555">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">celery -A app.tasks.celery_app flower --port=5555</div>
+            </div>
+            <div class="btn-row">
+              <a href="http://localhost:5555" target="_blank" class="btn-open">
+                <i data-lucide="flower-2"></i> Flower UI :5555
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launch: Database -->
+        <div class="launch-card">
+          <div class="launch-card-header">
+            <div class="launch-card-title">
+              <span class="icon-wrap">🗄️</span>
+              База данных PostgreSQL
+            </div>
+            <span class="status-badge"><span class="status-dot" style="background:var(--blue)"></span> Postgres 16</span>
+          </div>
+          <div class="launch-card-body">
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Запустить только БД через Docker</span>
+                <button class="copy-btn" data-cmd="docker compose up -d db redis">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">cd social-api
+docker compose up -d db redis</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Применить миграции Alembic</span>
+                <button class="copy-btn" data-cmd="alembic upgrade head">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">cd social-api
+alembic upgrade head</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Подключиться к БД (psql)</span>
+                <button class="copy-btn" data-cmd="docker compose exec db psql -U user -d social_api">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">docker compose exec db psql -U user -d social_api</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launch: Tests -->
+        <div class="launch-card">
+          <div class="launch-card-header">
+            <div class="launch-card-title">
+              <span class="icon-wrap">🧪</span>
+              Тесты
+            </div>
+            <span class="status-badge"><span class="status-dot" style="background:var(--mint)"></span> pytest</span>
+          </div>
+          <div class="launch-card-body">
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Все тесты</span>
+                <button class="copy-btn" data-cmd="cd social-api && pytest -v">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">cd social-api && pytest -v</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>Конкретный тест-файл</span>
+                <button class="copy-btn" data-cmd="pytest tests/test_auth.py -v">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">pytest tests/test_auth.py -v
+pytest tests/test_accounts.py -v
+pytest tests/test_posts.py -v</div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-label">
+                <span>С покрытием кода</span>
+                <button class="copy-btn" data-cmd="pytest --cov=app --cov-report=html">
+                  <i data-lucide="copy"></i> Копировать
+                </button>
+              </div>
+              <div class="cmd-code">pytest --cov=app --cov-report=html</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panels-grid -->
+
+      <!-- Stop commands -->
+      <div class="launch-card">
+        <div class="launch-card-header">
+          <div class="launch-card-title">
+            <span class="icon-wrap">🛑</span>
+            Остановка всего стека
+          </div>
+        </div>
+        <div class="launch-card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+          <div class="cmd-block" style="margin:0">
+            <div class="cmd-label">
+              <span>Остановить Docker Compose</span>
+              <button class="copy-btn" data-cmd="cd social-api && docker compose down">
+                <i data-lucide="copy"></i> Копировать
+              </button>
+            </div>
+            <div class="cmd-code">cd social-api && docker compose down</div>
+          </div>
+          <div class="cmd-block" style="margin:0">
+            <div class="cmd-label">
+              <span>Остановить + удалить данные (ОСТОРОЖНО!)</span>
+              <button class="copy-btn" data-cmd="cd social-api && docker compose down -v">
+                <i data-lucide="copy"></i> Копировать
+              </button>
+            </div>
+            <div class="cmd-code">cd social-api && docker compose down -v</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- =====================================================
+       SECTION: SERVICE STATUS
+  ===================================================== -->
+  <section id="status">
+    <div class="container">
+      <div class="section-hdr">
+        <h2>📡 Статус сервисов</h2>
+        <button class="check-all-btn" id="checkAllBtn">
+          <i data-lucide="refresh-cw"></i> Проверить все
+        </button>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table class="status-table" id="statusTable">
+          <thead>
+            <tr>
+              <th>Сервис</th>
+              <th>Порт</th>
+              <th>URL</th>
+              <th>Описание</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody id="statusTbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- =====================================================
+       SECTION: ENCYCLOPEDIA — LOCKED READ-ONLY DESCRIPTIONS
+  ===================================================== -->
+  <section id="encyclopedia">
+    <div class="container">
+      <div class="section-hdr">
+        <h2>📖 Энциклопедия проекта</h2>
+        <span class="meta">
+          <i data-lucide="lock" style="width:11px;height:11px;vertical-align:middle"></i>
+          Только чтение — не подлежит изменению
+        </span>
+      </div>
+
+      <!-- LANDING PAGE -->
+      <div class="locked-panel accent-blue">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="layout"></i>
+            🌐 Landing Page — index.html
+          </div>
+          <span class="locked-label">
+            <i data-lucide="lock"></i>
+            LOCKED · READ ONLY
+          </span>
+        </div>
+        <div class="locked-body">
+          <p>
+            <strong>Назначение:</strong> Публичная витрина всего проекта AI Agent Orchestrator.
+            Полностью статическая одностраничная верстка (single-file SPA). Открывается
+            напрямую в браузере без сервера.
+          </p>
+          <p>
+            <strong>Дизайн-система:</strong> Neubrutalism + Figma Config эстетика.
+            Толстые 2px чёрные границы, hard shadows (только px-смещение, без blur),
+            dot-grid фон с CSS-parallax на скролл, тёмная OLED-тема (#0A0A0A).
+          </p>
+          <p>
+            <strong>Разделы страницы:</strong>
+          </p>
+          <div class="kv-grid">
+            <span class="kv-key">Hero</span><span class="kv-val">Заголовок, typewriter-терминал, CTA-кнопки, live-аватары</span>
+            <span class="kv-key">Stats Widget</span><span class="kv-val">Glassmorphism блок, 3 метрики с анимированными прогресс-барами</span>
+            <span class="kv-key">Marquee Strip</span><span class="kv-val">Полноширинный бегущий тикер технологий; пауза при наведении</span>
+            <span class="kv-key">How It Works</span><span class="kv-val">3 шага pipeline: Define → Orchestrate → Ship</span>
+            <span class="kv-key">Active Projects</span><span class="kv-val">Bento 2×2 карточки проектов, Figma layer badges, hover анимации</span>
+            <span class="kv-key">Kanban Board</span><span class="kv-val">To Do / In Progress / Done, поиск, фильтр, Linear-style чекбоксы</span>
+            <span class="kv-key">Footer</span><span class="kv-val">Логотип, copyright, ссылки GitHub/Twitter/CV</span>
+          </div>
+          <div class="tag-row">
+            <span class="tech-tag">HTML5</span>
+            <span class="tech-tag">CSS Custom Properties</span>
+            <span class="tech-tag">Vanilla JS</span>
+            <span class="tech-tag">Lucide Icons</span>
+            <span class="tech-tag">Plus Jakarta Sans</span>
+            <span class="tech-tag">JetBrains Mono</span>
+            <span class="tech-tag">IntersectionObserver</span>
+            <span class="tech-tag">Dark/Light Mode</span>
+            <span class="tech-tag">Mobile Responsive</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN PANEL -->
+      <div class="locked-panel accent-coral">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="shield"></i>
+            🛡️ Admin Panel — admin.html (этот файл)
+          </div>
+          <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+        </div>
+        <div class="locked-body">
+          <p>
+            <strong>Назначение:</strong> Единая точка управления всем репозиторием LordKoks/321.
+            Запуск всех сервисов, мониторинг состояния, полная документация (энциклопедия)
+            каждого компонента. Работает как статический HTML без сервера.
+          </p>
+          <p>
+            <strong>Возможности:</strong> Копирование команд одной кнопкой, live ping-статус
+            каждого эндпоинта, таблица всех API-маршрутов, раздел Энциклопедия с
+            зафиксированными описаниями (pointer-events: none + user-select: none),
+            переключатель темы с localStorage.
+          </p>
+          <div class="tag-row">
+            <span class="tech-tag">HTML5</span>
+            <span class="tech-tag">Vanilla JS</span>
+            <span class="tech-tag">fetch() health checks</span>
+            <span class="tech-tag">Clipboard API</span>
+            <span class="tech-tag">Dark/Light Mode</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panels-grid">
+
+        <!-- SOCIAL API -->
+        <div class="locked-panel accent-mint">
+          <div class="locked-panel-header">
+            <div class="locked-panel-title">
+              <i data-lucide="server"></i>
+              ⚡ Social Media API — social-api/
+            </div>
+            <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+          </div>
+          <div class="locked-body">
+            <p>
+              <strong>Назначение:</strong> REST API для автоматизации SMM-рекламы:
+              публикация постов в 5 соцсетей, управление кампаниями, сбор аналитики,
+              агрегация вакансий из 5+ источников.
+            </p>
+            <div class="kv-grid">
+              <span class="kv-key">Framework</span><span class="kv-val">FastAPI 0.110+ (async)</span>
+              <span class="kv-key">Python</span><span class="kv-val">3.11+</span>
+              <span class="kv-key">Auth</span><span class="kv-val">JWT (access + refresh tokens)</span>
+              <span class="kv-key">Port</span><span class="kv-val">8000 (direct) / 80 via Nginx</span>
+              <span class="kv-key">Docs</span><span class="kv-val">localhost:8000/docs (Swagger UI)</span>
+              <span class="kv-key">Migrations</span><span class="kv-val">Alembic (0001_initial.py)</span>
+            </div>
+            <div class="tag-row">
+              <span class="tech-tag">FastAPI</span>
+              <span class="tech-tag">SQLAlchemy</span>
+              <span class="tech-tag">Alembic</span>
+              <span class="tech-tag">Pydantic v2</span>
+              <span class="tech-tag">httpx</span>
+              <span class="tech-tag">python-jose</span>
+              <span class="tech-tag">passlib</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOCKER INFRASTRUCTURE -->
+        <div class="locked-panel accent-blue">
+          <div class="locked-panel-header">
+            <div class="locked-panel-title">
+              <i data-lucide="box"></i>
+              🐳 Docker Инфраструктура
+            </div>
+            <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+          </div>
+          <div class="locked-body">
+            <p>
+              <strong>Файл:</strong> <code style="font-family:monospace;font-size:11px">social-api/docker-compose.yml</code>
+              — 6 сервисов в одной команде.
+            </p>
+            <div class="kv-grid">
+              <span class="kv-key">db</span><span class="kv-val">PostgreSQL 16-alpine. Данные в томе postgres_data</span>
+              <span class="kv-key">redis</span><span class="kv-val">Redis 7-alpine. Брокер Celery + кеш. Том redis_data</span>
+              <span class="kv-key">api</span><span class="kv-val">FastAPI + Uvicorn :8000. Запускает alembic upgrade head при старте</span>
+              <span class="kv-key">worker</span><span class="kv-val">Celery worker, 4 потока. Обрабатывает задачи публикации и аналитики</span>
+              <span class="kv-key">beat</span><span class="kv-val">Celery Beat — планировщик (публикация постов каждые 60 с, аналитика каждый час)</span>
+              <span class="kv-key">nginx</span><span class="kv-val">Nginx alpine :80. Прокси /api/ → api:8000, /docs → api:8000/docs</span>
+            </div>
+            <div class="tag-row">
+              <span class="tech-tag">Docker Compose v3.9</span>
+              <span class="tech-tag">Health checks</span>
+              <span class="tech-tag">Named volumes</span>
+              <span class="tech-tag">restart: unless-stopped</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CELERY TASKS -->
+        <div class="locked-panel accent-purple">
+          <div class="locked-panel-header">
+            <div class="locked-panel-title">
+              <i data-lucide="clock"></i>
+              ⚙️ Celery: Фоновые задачи
+            </div>
+            <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+          </div>
+          <div class="locked-body">
+            <p>
+              <strong>Брокер:</strong> Redis. Все задачи сериализуются в JSON.
+            </p>
+            <div class="kv-grid">
+              <span class="kv-key">publish-scheduled-posts</span><span class="kv-val">Каждые 60 секунд — публикует посты с наступившим временем</span>
+              <span class="kv-key">collect-analytics</span><span class="kv-val">Каждые 3600 секунд — собирает метрики постов из соцсетей</span>
+              <span class="kv-key">Файл tasks</span><span class="kv-val">app/tasks/celery_app.py, app/tasks/scheduler.py, app/tasks/analytics.py</span>
+            </div>
+            <div class="tag-row">
+              <span class="tech-tag">Celery 5.3</span>
+              <span class="tech-tag">Redis broker</span>
+              <span class="tech-tag">Beat scheduler</span>
+              <span class="tech-tag">Flower monitor</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DATABASE -->
+        <div class="locked-panel accent-amber">
+          <div class="locked-panel-header">
+            <div class="locked-panel-title">
+              <i data-lucide="database"></i>
+              🗄️ База данных PostgreSQL
+            </div>
+            <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+          </div>
+          <div class="locked-body">
+            <p>
+              <strong>Версия:</strong> PostgreSQL 16 (Docker) или любой совместимый.
+              Async-драйвер asyncpg. ORM — SQLAlchemy 2.0 async.
+            </p>
+            <div class="kv-grid">
+              <span class="kv-key">User</span><span class="kv-val">user / password (конфиг в .env)</span>
+              <span class="kv-key">Database</span><span class="kv-val">social_api</span>
+              <span class="kv-key">Port</span><span class="kv-val">5432 (внутренний в Docker)</span>
+              <span class="kv-key">Модели</span><span class="kv-val">User, Post, PostTarget, SocialAccount, Campaign, Analytics</span>
+              <span class="kv-key">Миграции</span><span class="kv-val">Alembic, versions/0001_initial.py</span>
+            </div>
+            <div class="tag-row">
+              <span class="tech-tag">PostgreSQL 16</span>
+              <span class="tech-tag">asyncpg</span>
+              <span class="tech-tag">SQLAlchemy 2.0</span>
+              <span class="tech-tag">Alembic</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panels-grid -->
+
+      <!-- SOCIAL INTEGRATIONS -->
+      <div class="locked-panel accent-mint" style="margin-top:24px">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="share-2"></i>
+            📲 Интеграции с соцсетями
+          </div>
+          <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+        </div>
+        <div class="locked-body">
+          <p>
+            <strong>Папка:</strong> <code style="font-family:monospace;font-size:11px">social-api/app/integrations/</code> —
+            каждая сеть реализует общий базовый класс (<code style="font-family:monospace;font-size:11px">base.py</code>).
+          </p>
+          <div class="kv-grid">
+            <span class="kv-key">VK</span><span class="kv-val">OAuth2 (vk/oauth.py) + API публикации (vk/api.py). Переменные: VK_APP_ID, VK_APP_SECRET</span>
+            <span class="kv-key">X (Twitter)</span><span class="kv-val">OAuth2 PKCE (x/oauth.py) + API твитов (x/api.py). Переменные: X_CLIENT_ID, X_CLIENT_SECRET</span>
+            <span class="kv-key">Telegram</span><span class="kv-val">MTProto через Telethon (telegram/api.py). Переменные: TELEGRAM_API_ID, TELEGRAM_API_HASH</span>
+            <span class="kv-key">OK</span><span class="kv-val">OAuth2 Одноклассники (ok/oauth.py). Переменные: OK_APP_ID, OK_APP_SECRET, OK_PUBLIC_KEY</span>
+            <span class="kv-key">YouTube</span><span class="kv-val">Google OAuth2 (youtube/oauth.py) + Data API v3 (youtube/api.py). Переменные: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET</span>
+          </div>
+          <div class="tag-row">
+            <span class="tech-tag">VK API</span>
+            <span class="tech-tag">X API v2</span>
+            <span class="tech-tag">Telethon</span>
+            <span class="tech-tag">OK API</span>
+            <span class="tech-tag">YouTube Data API v3</span>
+            <span class="tech-tag">OAuth2 / PKCE</span>
+            <span class="tech-tag">MTProto</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOB AGGREGATOR -->
+      <div class="locked-panel accent-amber" style="margin-top:24px">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="briefcase"></i>
+            💼 Агрегатор вакансий
+          </div>
+          <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+        </div>
+        <div class="locked-body">
+          <p>
+            <strong>Папка:</strong> <code style="font-family:monospace;font-size:11px">social-api/app/integrations/jobs/</code> —
+            aggregator.py объединяет результаты всех источников в единый список.
+          </p>
+          <div class="kv-grid">
+            <span class="kv-key">Glassdoor</span><span class="kv-val">Через RapidAPI. 100 запросов/мес free. Ключ: RAPIDAPI_KEY</span>
+            <span class="kv-key">Himalayas</span><span class="kv-val">Публичный API (без ключа). Remote jobs. himalayas.py</span>
+            <span class="kv-key">Jobicy</span><span class="kv-val">Публичный API (без ключа). Remote jobs. jobicy.py</span>
+            <span class="kv-key">Remote Resources</span><span class="kv-val">Открытый RSS/API. remote_resources.py</span>
+            <span class="kv-key">TheirStack</span><span class="kv-val">200 кредитов/мес free. Ключ: THEIRSTACK_API_KEY</span>
+            <span class="kv-key">SerpApi</span><span class="kv-val">Google Jobs. 100 запросов/мес free. Ключ: SERPAPI_KEY</span>
+          </div>
+          <div class="tag-row">
+            <span class="tech-tag">Glassdoor</span>
+            <span class="tech-tag">Himalayas</span>
+            <span class="tech-tag">Jobicy</span>
+            <span class="tech-tag">TheirStack</span>
+            <span class="tech-tag">SerpApi</span>
+            <span class="tech-tag">httpx async</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUTH SYSTEM -->
+      <div class="locked-panel accent-blue" style="margin-top:24px">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="key-round"></i>
+            🔐 Система аутентификации
+          </div>
+          <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+        </div>
+        <div class="locked-body">
+          <p>
+            <strong>Метод:</strong> JWT Bearer tokens. Access token (30 мин) + Refresh token (7 дней).
+            Пароли хешируются через bcrypt (passlib).
+          </p>
+          <div class="kv-grid">
+            <span class="kv-key">Файлы</span><span class="kv-val">app/auth/jwt.py (токены), app/auth/dependencies.py (DI)</span>
+            <span class="kv-key">Алгоритм</span><span class="kv-val">HS256 (настраивается через JWT_ALGORITHM в .env)</span>
+            <span class="kv-key">SECRET_KEY</span><span class="kv-val">32+ символа, задаётся в .env (обязательно сменить!)</span>
+            <span class="kv-key">Маршруты</span><span class="kv-val">POST /auth/register, POST /auth/login, POST /auth/refresh</span>
+            <span class="kv-key">Core</span><span class="kv-val">app/core/token_manager.py — безопасное хранение OAuth токенов соцсетей</span>
+            <span class="kv-key">Rate limiter</span><span class="kv-val">app/core/rate_limiter.py — защита от брутфорса</span>
+          </div>
+          <div class="tag-row">
+            <span class="tech-tag">JWT</span>
+            <span class="tech-tag">python-jose</span>
+            <span class="tech-tag">passlib/bcrypt</span>
+            <span class="tech-tag">OAuth2PasswordBearer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NGINX -->
+      <div class="locked-panel accent-coral" style="margin-top:24px">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="network"></i>
+            🔀 Nginx Reverse Proxy
+          </div>
+          <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+        </div>
+        <div class="locked-body">
+          <p>
+            <strong>Файл:</strong> <code style="font-family:monospace;font-size:11px">social-api/nginx.conf</code>.
+            Образ nginx:alpine, порт 80. Терминирует внешние запросы и проксирует на FastAPI.
+          </p>
+          <div class="kv-grid">
+            <span class="kv-key">GET /api/*</span><span class="kv-val">→ http://api:8000/* (с заменой префикса)</span>
+            <span class="kv-key">GET /docs</span><span class="kv-val">→ http://api:8000/docs (Swagger UI)</span>
+            <span class="kv-key">GET /openapi.json</span><span class="kv-val">→ http://api:8000/openapi.json</span>
+            <span class="kv-key">Headers</span><span class="kv-val">X-Real-IP, X-Forwarded-For, X-Forwarded-Proto пробрасываются</span>
+          </div>
+          <div class="tag-row">
+            <span class="tech-tag">Nginx alpine</span>
+            <span class="tech-tag">Reverse proxy</span>
+            <span class="tech-tag">Port 80</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENV CONFIG -->
+      <div class="locked-panel accent-purple" style="margin-top:24px">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="settings-2"></i>
+            ⚙️ Конфигурация (.env)
+          </div>
+          <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+        </div>
+        <div class="locked-body">
+          <p>
+            <strong>Файл-шаблон:</strong> <code style="font-family:monospace;font-size:11px">social-api/.env.example</code> —
+            скопируйте в <code style="font-family:monospace;font-size:11px">.env</code> перед запуском.
+            Pydantic-Settings (BaseSettings) автоматически читает переменные.
+          </p>
+          <div class="kv-grid">
+            <span class="kv-key">DATABASE_URL</span><span class="kv-val">postgresql+asyncpg://user:password@db:5432/social_api</span>
+            <span class="kv-key">REDIS_URL</span><span class="kv-val">redis://redis:6379/0</span>
+            <span class="kv-key">SECRET_KEY</span><span class="kv-val">⚠️ ОБЯЗАТЕЛЬНО заменить на случайные 32+ символа!</span>
+            <span class="kv-key">VK / X / TG / OK / YT</span><span class="kv-val">OAuth ключи для каждой соцсети (опционально)</span>
+            <span class="kv-key">RAPIDAPI_KEY</span><span class="kv-val">Glassdoor вакансии через RapidAPI</span>
+            <span class="kv-key">THEIRSTACK_API_KEY</span><span class="kv-val">TheirStack вакансии</span>
+            <span class="kv-key">SERPAPI_KEY</span><span class="kv-val">Google Jobs через SerpApi</span>
+            <span class="kv-key">PROXY_*</span><span class="kv-val">Прокси для Telegram при 10+ аккаунтах</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TESTS -->
+      <div class="locked-panel accent-mint" style="margin-top:24px">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="test-tube-2"></i>
+            🧪 Тесты
+          </div>
+          <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+        </div>
+        <div class="locked-body">
+          <p>
+            <strong>Папка:</strong> <code style="font-family:monospace;font-size:11px">social-api/tests/</code> —
+            7 тест-файлов, конфигурация в pytest.ini и conftest.py.
+          </p>
+          <div class="kv-grid">
+            <span class="kv-key">test_auth.py</span><span class="kv-val">Регистрация, логин, рефреш токен, защищённые маршруты</span>
+            <span class="kv-key">test_accounts.py</span><span class="kv-val">CRUD социальных аккаунтов, OAuth-привязка</span>
+            <span class="kv-key">test_posts.py</span><span class="kv-val">Создание постов, мультиплатформенный таргетинг, расписание</span>
+            <span class="kv-key">test_campaigns.py</span><span class="kv-val">Рекламные кампании, статусы, бюджет</span>
+            <span class="kv-key">test_analytics.py</span><span class="kv-val">Получение метрик постов и кампаний</span>
+            <span class="kv-key">test_jobs.py</span><span class="kv-val">Агрегация вакансий, фильтрация</span>
+            <span class="kv-key">test_infrastructure.py</span><span class="kv-val">Health check, DB соединение, Redis соединение</span>
+          </div>
+          <div class="tag-row">
+            <span class="tech-tag">pytest</span>
+            <span class="tech-tag">pytest-asyncio</span>
+            <span class="tech-tag">httpx TestClient</span>
+            <span class="tech-tag">conftest fixtures</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- =====================================================
+       SECTION: API ROUTES REFERENCE
+  ===================================================== -->
+  <section id="api-routes">
+    <div class="container">
+      <div class="section-hdr">
+        <h2>🗺️ Карта API маршрутов</h2>
+        <a href="http://localhost:8000/docs" target="_blank" class="btn-open" style="font-size:12px;padding:6px 14px">
+          <i data-lucide="external-link"></i> Открыть Swagger UI
+        </a>
+      </div>
+
+      <div class="locked-panel" style="overflow:hidden">
+        <div class="locked-panel-header">
+          <div class="locked-panel-title">
+            <i data-lucide="route"></i>
+            BASE URL: http://localhost:8000 &nbsp;|&nbsp; Nginx: http://localhost:80/api/
+          </div>
+          <span class="locked-label"><i data-lucide="lock"></i> LOCKED · READ ONLY</span>
+        </div>
+        <div style="padding:0 18px 18px;pointer-events:none;user-select:none">
+
+          <!-- Auth -->
+          <p style="font-family:monospace;font-size:11px;color:var(--text-muted);padding:12px 0 4px;text-transform:uppercase;letter-spacing:.06em">
+            /auth — Аутентификация
+          </p>
+          <div class="route-row"><span class="method-badge method-post">POST</span><span class="route-path">/auth/register</span><span class="route-desc">Регистрация нового пользователя</span></div>
+          <div class="route-row"><span class="method-badge method-post">POST</span><span class="route-path">/auth/login</span><span class="route-desc">Логин, получить JWT токены</span></div>
+          <div class="route-row"><span class="method-badge method-post">POST</span><span class="route-path">/auth/refresh</span><span class="route-desc">Обновить access token</span></div>
+
+          <!-- Accounts -->
+          <p style="font-family:monospace;font-size:11px;color:var(--text-muted);padding:12px 0 4px;text-transform:uppercase;letter-spacing:.06em">
+            /accounts — Социальные аккаунты
+          </p>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/accounts</span><span class="route-desc">Список привязанных аккаунтов</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/accounts/vk/auth</span><span class="route-desc">Начать VK OAuth2</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/accounts/vk/callback</span><span class="route-desc">VK OAuth2 callback</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/accounts/x/auth</span><span class="route-desc">Начать X OAuth2 PKCE</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/accounts/x/callback</span><span class="route-desc">X OAuth2 callback</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/accounts/ok/auth</span><span class="route-desc">OK OAuth2</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/accounts/youtube/auth</span><span class="route-desc">Google/YouTube OAuth2</span></div>
+          <div class="route-row"><span class="method-badge method-delete">DEL</span><span class="route-path">/accounts/{id}</span><span class="route-desc">Отвязать аккаунт</span></div>
+
+          <!-- Posts -->
+          <p style="font-family:monospace;font-size:11px;color:var(--text-muted);padding:12px 0 4px;text-transform:uppercase;letter-spacing:.06em">
+            /posts — Публикации
+          </p>
+          <div class="route-row"><span class="method-badge method-post">POST</span><span class="route-path">/posts</span><span class="route-desc">Создать пост (мульти-платформа)</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/posts</span><span class="route-desc">Список постов пользователя</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/posts/{id}</span><span class="route-desc">Детали поста</span></div>
+          <div class="route-row"><span class="method-badge method-delete">DEL</span><span class="route-path">/posts/{id}</span><span class="route-desc">Удалить пост</span></div>
+
+          <!-- Campaigns -->
+          <p style="font-family:monospace;font-size:11px;color:var(--text-muted);padding:12px 0 4px;text-transform:uppercase;letter-spacing:.06em">
+            /campaigns — Рекламные кампании
+          </p>
+          <div class="route-row"><span class="method-badge method-post">POST</span><span class="route-path">/campaigns</span><span class="route-desc">Создать кампанию</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/campaigns</span><span class="route-desc">Список кампаний</span></div>
+          <div class="route-row"><span class="method-badge method-put">PUT</span><span class="route-path">/campaigns/{id}</span><span class="route-desc">Обновить кампанию</span></div>
+          <div class="route-row"><span class="method-badge method-delete">DEL</span><span class="route-path">/campaigns/{id}</span><span class="route-desc">Удалить кампанию</span></div>
+
+          <!-- Analytics -->
+          <p style="font-family:monospace;font-size:11px;color:var(--text-muted);padding:12px 0 4px;text-transform:uppercase;letter-spacing:.06em">
+            /analytics — Аналитика
+          </p>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/analytics/posts/{id}</span><span class="route-desc">Метрики поста (охват, лайки, просмотры)</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/analytics/campaigns/{id}</span><span class="route-desc">Метрики кампании</span></div>
+
+          <!-- Jobs -->
+          <p style="font-family:monospace;font-size:11px;color:var(--text-muted);padding:12px 0 4px;text-transform:uppercase;letter-spacing:.06em">
+            /jobs — Вакансии
+          </p>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/jobs?q=python&location=remote</span><span class="route-desc">Поиск по всем агрегаторам</span></div>
+
+          <!-- Health -->
+          <p style="font-family:monospace;font-size:11px;color:var(--text-muted);padding:12px 0 4px;text-transform:uppercase;letter-spacing:.06em">
+            System
+          </p>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/health</span><span class="route-desc">Health check → {"status":"ok"}</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/docs</span><span class="route-desc">Swagger UI (интерактивная документация)</span></div>
+          <div class="route-row"><span class="method-badge method-get">GET</span><span class="route-path">/openapi.json</span><span class="route-desc">OpenAPI 3.0 схема</span></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       FOOTER
+  ===================================================== -->
+  <footer>
+    <div class="container footer-inner">
+      <a href="#" class="footer-logo">◆ AI.Studio Admin</a>
+      <span class="footer-copy">© 2026 LordKoks · MIT License</span>
+      <span class="footer-copy mono">admin.html · LordKoks/321</span>
+    </div>
+  </footer>
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ===================================================== -->
+  <script>
+    /* --- Init Lucide --- */
+    lucide.createIcons();
+
+    /* --- Theme toggle --- */
+    const themeBtn = document.getElementById('themeToggle');
+    const html = document.documentElement;
+    function isDark() {
+      const t = html.getAttribute('data-theme');
+      if (t === 'dark')  return true;
+      if (t === 'light') return false;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    themeBtn.addEventListener('click', () => {
+      const dark = !isDark();
+      html.setAttribute('data-theme', dark ? 'dark' : 'light');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    });
+
+    /* --- Copy buttons --- */
+    document.querySelectorAll('.copy-btn[data-cmd]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.cmd;
+        navigator.clipboard.writeText(text).then(() => {
+          btn.classList.add('copied');
+          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Скопировано';
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<i data-lucide="copy"></i> Копировать';
+            lucide.createIcons();
+          }, 2000);
+        });
+      });
+    });
+
+    /* --- Service status table --- */
+    const SERVICES = [
+      { name: 'Landing Page',   icon: '🌐', port: '—',   url: './index.html',              checkUrl: './index.html',             desc: 'Публичный лендинг (static file)' },
+      { name: 'Admin Panel',    icon: '🛡️', port: '—',   url: './admin.html',              checkUrl: './admin.html',             desc: 'Этот файл (static file)' },
+      { name: 'FastAPI / API',  icon: '⚡', port: '8000', url: 'http://localhost:8000/docs', checkUrl: 'http://localhost:8000/health', desc: 'REST API сервер (Docker: api)' },
+      { name: 'Nginx Proxy',    icon: '🔀', port: '80',   url: 'http://localhost:80/api/health', checkUrl: 'http://localhost:80/api/health', desc: 'Reverse proxy → API' },
+      { name: 'Swagger UI',     icon: '📖', port: '8000', url: 'http://localhost:8000/docs', checkUrl: 'http://localhost:8000/openapi.json', desc: 'OpenAPI 3.0 интерактивная документация' },
+      { name: 'Flower (Celery)',icon: '🌸', port: '5555', url: 'http://localhost:5555',      checkUrl: 'http://localhost:5555',    desc: 'Мониторинг задач Celery' },
+      { name: 'PostgreSQL',     icon: '🗄️', port: '5432', url: '—',                          checkUrl: null,                       desc: 'БД (Docker internal)' },
+      { name: 'Redis',          icon: '🔴', port: '6379', url: '—',                          checkUrl: null,                       desc: 'Брокер Celery + кеш (Docker internal)' },
+    ];
+
+    const tbody = document.getElementById('statusTbody');
+
+    function buildTable() {
+      tbody.innerHTML = '';
+      SERVICES.forEach((svc, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="svc-name"><span class="svc-icon">${svc.icon}</span>${svc.name}</span></td>
+          <td><span class="svc-port">${svc.port}</span></td>
+          <td class="svc-url">${svc.url !== '—' ? `<a href="${svc.url}" target="_blank" rel="noopener">${svc.url}</a>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+          <td style="font-size:12px;color:var(--text-muted)">${svc.desc}</td>
+          <td class="svc-status" id="ping-${i}">
+            <span class="ping-indicator ping-wait"><span class="d"></span>—</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function pingService(svc, i) {
+      const cell = document.getElementById(`ping-${i}`);
+      cell.innerHTML = '<span class="ping-indicator ping-wait"><span class="d"></span>Проверка…</span>';
+
+      if (!svc.checkUrl) {
+        cell.innerHTML = '<span class="ping-indicator" style="color:var(--text-muted)"><span class="d" style="background:var(--text-muted)"></span>N/A</span>';
+        return;
+      }
+
+      const t0 = Date.now();
+      try {
+        const res = await fetch(svc.checkUrl, { method: 'GET', mode: 'no-cors', cache: 'no-cache', signal: AbortSignal.timeout(4000) });
+        const ms = Date.now() - t0;
+        // no-cors always gives opaque, treat as ok if no error
+        cell.innerHTML = `<span class="ping-indicator ping-ok"><span class="d"></span>Online · ${ms}ms</span>`;
+      } catch(e) {
+        cell.innerHTML = `<span class="ping-indicator ping-err"><span class="d"></span>Offline</span>`;
+      }
+    }
+
+    async function checkAll() {
+      const btn = document.getElementById('checkAllBtn');
+      btn.disabled = true;
+      await Promise.all(SERVICES.map((svc, i) => pingService(svc, i)));
+      btn.disabled = false;
+    }
+
+    buildTable();
+    document.getElementById('checkAllBtn').addEventListener('click', checkAll);
+
+    /* Auto-check on load after a short delay */
+    setTimeout(checkAll, 800);
+
+    /* --- Parallax dot grid --- */
+    window.addEventListener('scroll', () => {
+      document.documentElement.style.setProperty('--dot-offset-y', `${window.scrollY * 0.3}px`);
+    }, { passive: true });
+    const ds = document.createElement('style');
+    ds.textContent = 'body::before { background-position: 0 var(--dot-offset-y, 0); }';
+    document.head.appendChild(ds);
+  </script>
+
+</body>
+</html>
