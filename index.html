@@ -8,10 +8,17 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
 
   <!-- Lucide icons (CDN) -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Apply saved theme immediately to prevent flash -->
+  <script>
+    (function(){
+      var t = localStorage.getItem('theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 
   <style>
     /* =========================================================
@@ -33,14 +40,20 @@
       --dot-opacity: 0.1;
     }
 
-    /* Dark mode — OLED-black */
+    /* Dark mode — OLED-black (auto via OS, override via [data-theme]) */
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not([data-theme="light"]) {
         --bg:         #0A0A0A;
         --surface:    #141414;
         --text:       #F9F9F7;
         --text-muted: #6B7280;
       }
+    }
+    [data-theme="dark"] {
+      --bg:         #0A0A0A;
+      --surface:    #141414;
+      --text:       #F9F9F7;
+      --text-muted: #6B7280;
     }
 
     /* =========================================================
@@ -57,13 +70,9 @@
       background-color: var(--bg);
       color: var(--text);
       overflow-x: hidden;
-      /* Dot-grid background — PARALLAX target */
-      background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
-      background-size: 24px 24px;
-      background-attachment: fixed;
     }
 
-    /* Lower dot-grid opacity */
+    /* Dot-grid background — parallax layer */
     body::before {
       content: '';
       position: fixed;
@@ -73,11 +82,7 @@
       opacity: var(--dot-opacity);
       pointer-events: none;
       z-index: 0;
-      transition: background-position 0.1s linear;
     }
-
-    /* Override body bg to solid for layering */
-    body { background-image: none; }
 
     /* =========================================================
        TYPOGRAPHY
@@ -96,8 +101,12 @@
       color: var(--text-muted);
     }
 
-    /* =========================================================
-       LAYOUT — 12-col grid, 1440px, 120px gutters
+    /* Heading font — Plus Jakarta Sans (matches Satoshi/General Sans aesthetic) */
+    h1, h2, h3, .hero-h1, .section-title {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    }
+
+
     ========================================================= */
     .container {
       max-width: 1440px;
@@ -214,7 +223,6 @@
     }
 
     /* Left — headline + CTA */
-    .hero-left {}
 
     .hero-tag {
       display: inline-flex;
@@ -361,10 +369,220 @@
       outline: 1px dashed rgba(0,0,0,0.3);
       outline-offset: 6px;
     }
+    /* Dark mode: stats widget glass */
     @media (prefers-color-scheme: dark) {
-      .stats-widget {
-        background: rgba(20,20,20,0.7);
+      :root:not([data-theme="light"]) .stats-widget { background: rgba(20,20,20,0.7); }
+    }
+    [data-theme="dark"] .stats-widget { background: rgba(20,20,20,0.7); }
+
+    /* =========================================================
+       THEME TOGGLE BUTTON
+    ========================================================= */
+    .theme-toggle {
+      width: 34px;
+      height: 34px;
+      border: var(--border-w) solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 2px 2px 0px var(--border);
+      transition: background 0.1s, color 0.1s;
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover { background: var(--text); color: var(--bg); }
+    .theme-toggle svg { width: 15px; height: 15px; }
+    /* Show sun in dark, moon in light */
+    .theme-toggle .icon-sun  { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .theme-toggle .icon-sun  { display: block; }
+      :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
+    }
+
+    /* =========================================================
+       HAMBURGER MENU (mobile)
+    ========================================================= */
+    .hamburger {
+      display: none;
+      width: 34px;
+      height: 34px;
+      border: var(--border-w) solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 2px 2px 0px var(--border);
+      flex-shrink: 0;
+    }
+    .hamburger svg { width: 16px; height: 16px; }
+    @media (max-width: 600px) {
+      .hamburger { display: flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg);
+        border-bottom: var(--border-w) solid var(--border);
+        flex-direction: column;
+        gap: 0;
+        z-index: 99;
       }
+      .nav-links.open { display: flex; }
+      .nav-links li a {
+        display: block;
+        padding: 14px 20px;
+        border-top: 1px solid rgba(0,0,0,0.08);
+        font-size: 15px;
+      }
+    }
+
+    /* =========================================================
+       SECTION 2.5 — PROCESS / HOW IT WORKS
+       Three-step horizontal layout between Hero and Projects
+    ========================================================= */
+    #process {
+      padding-top: 0;
+      padding-bottom: 80px;
+    }
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .process-card {
+      border: var(--border-w) solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--hard-shadow);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Accent top strip */
+    .process-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .process-card-1::before { background: var(--blue); }
+    .process-card-2::before { background: var(--amber); }
+    .process-card-3::before { background: var(--mint); }
+
+    .process-step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .process-step-num::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(0,0,0,0.1);
+    }
+    .process-icon {
+      width: 48px;
+      height: 48px;
+      border: var(--border-w) solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+    .process-title {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+    .process-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+    .process-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 16px;
+    }
+    .process-tag {
+      padding: 2px 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 4px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+    @media (max-width: 1024px) {
+      .process-grid { grid-template-columns: 1fr; }
+    }
+
+    /* =========================================================
+       MARQUEE / TICKER STRIP (between sections)
+    ========================================================= */
+    .marquee-strip {
+      border-top: var(--border-w) solid var(--border);
+      border-bottom: var(--border-w) solid var(--border);
+      background: var(--text);
+      color: var(--bg);
+      overflow: hidden;
+      padding: 10px 0;
+      white-space: nowrap;
+    }
+    .marquee-inner {
+      display: inline-flex;
+      gap: 0;
+      animation: marquee 28s linear infinite;
+    }
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 32px;
+    }
+    .marquee-item::after {
+      content: '◆';
+      opacity: 0.4;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .marquee-strip:hover .marquee-inner { animation-play-state: paused; }
+
+    /* =========================================================
+       RESPONSIVE ADDITIONS
+    ========================================================= */
+    @media (max-width: 600px) {
+      .cta-row { gap: 12px; }
+      .process-grid { grid-template-columns: 1fr; }
+      .nav-right { gap: 8px; }
     }
     .stats-widget-title {
       font-family: 'JetBrains Mono', monospace;
@@ -908,14 +1126,26 @@
   <nav>
     <div class="container nav-inner">
       <a href="#" class="nav-logo">◆ AI.Studio</a>
-      <ul class="nav-links">
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#process">How it works</a></li>
         <li><a href="#projects">Projects</a></li>
         <li><a href="#kanban">Board</a></li>
         <li><a href="https://github.com/LordKoks/321" target="_blank" rel="noopener">GitHub</a></li>
       </ul>
-      <div class="nav-badge">
-        <span class="dot"></span>
-        <span>2 agents active</span>
+      <div style="display:flex;align-items:center;gap:10px;" class="nav-right">
+        <div class="nav-badge">
+          <span class="dot"></span>
+          <span>2 agents active</span>
+        </div>
+        <!-- Dark mode toggle -->
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+          <i data-lucide="sun"  class="icon-sun"></i>
+          <i data-lucide="moon" class="icon-moon"></i>
+        </button>
+        <!-- Mobile hamburger -->
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+          <i data-lucide="menu"></i>
+        </button>
       </div>
     </div>
   </nav>
@@ -1020,6 +1250,100 @@
         </div>
 
       </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       MARQUEE TICKER STRIP
+  ===================================================== -->
+  <div class="marquee-strip" aria-hidden="true">
+    <div class="marquee-inner">
+      <!-- duplicated for seamless loop -->
+      <span class="marquee-item">MetaGPT Integration</span>
+      <span class="marquee-item">OpenHands SDK v3</span>
+      <span class="marquee-item">VS Code ACP Extension</span>
+      <span class="marquee-item">Multi-Agent Orchestration</span>
+      <span class="marquee-item">Docker · Python 3.11</span>
+      <span class="marquee-item">Android APK</span>
+      <span class="marquee-item">Sprint 7 Active</span>
+      <span class="marquee-item">MetaGPT Integration</span>
+      <span class="marquee-item">OpenHands SDK v3</span>
+      <span class="marquee-item">VS Code ACP Extension</span>
+      <span class="marquee-item">Multi-Agent Orchestration</span>
+      <span class="marquee-item">Docker · Python 3.11</span>
+      <span class="marquee-item">Android APK</span>
+      <span class="marquee-item">Sprint 7 Active</span>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SECTION 2.5 — PROCESS / HOW IT WORKS
+  ===================================================== -->
+  <section id="process">
+    <div class="container">
+      <div class="section-header reveal" style="animation-delay:0.12s">
+        <h2 class="section-title">How It Works</h2>
+        <span class="section-meta">3-step pipeline</span>
+      </div>
+
+      <!-- Process grid — 3 horizontal cards -->
+      <div class="process-grid">
+
+        <!-- Step 1 -->
+        <div class="process-card process-card-1 reveal" style="animation-delay:0.15s">
+          <div class="layer-badge" style="margin-bottom:12px">
+            ◆ Component: ProcessStep / Variant: Input
+          </div>
+          <div class="process-step-num">Step 01</div>
+          <div class="process-icon">📥</div>
+          <div class="process-title">Define &amp; Plan</div>
+          <p class="process-desc">
+            Describe your software goal in natural language. MetaGPT decomposes it into roles: product manager, architect, engineer, and QA — each producing structured artifacts.
+          </p>
+          <div class="process-tags">
+            <span class="process-tag">MetaGPT</span>
+            <span class="process-tag">PRD</span>
+            <span class="process-tag">System Design</span>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="process-card process-card-2 reveal" style="animation-delay:0.2s">
+          <div class="layer-badge" style="margin-bottom:12px">
+            ◆ Component: ProcessStep / Variant: Execute
+          </div>
+          <div class="process-step-num">Step 02</div>
+          <div class="process-icon">⚙️</div>
+          <div class="process-title">Orchestrate &amp; Build</div>
+          <p class="process-desc">
+            OpenHands executes tasks via sandboxed agents. Each agent has tools: code runner, browser, terminal. The orchestrator passes context across agents using the MCP/ACP protocol.
+          </p>
+          <div class="process-tags">
+            <span class="process-tag">OpenHands</span>
+            <span class="process-tag">ACP/MCP</span>
+            <span class="process-tag">Sandbox</span>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="process-card process-card-3 reveal" style="animation-delay:0.25s">
+          <div class="layer-badge" style="margin-bottom:12px">
+            ◆ Component: ProcessStep / Variant: Ship
+          </div>
+          <div class="process-step-num">Step 03</div>
+          <div class="process-icon">🚀</div>
+          <div class="process-title">Review &amp; Ship</div>
+          <p class="process-desc">
+            Results stream back to VS Code via the ACP extension. Developers review diffs inline, approve or re-prompt, then trigger a Docker build — or generate an Android APK directly.
+          </p>
+          <div class="process-tags">
+            <span class="process-tag">VS Code</span>
+            <span class="process-tag">Docker</span>
+            <span class="process-tag">Android</span>
+          </div>
+        </div>
+
+      </div><!-- /process-grid -->
     </div>
   </section>
 
@@ -1384,9 +1708,39 @@
     /* --- Init Lucide icons --- */
     lucide.createIcons();
 
-    /* --- Dark mode: dot grid color --- */
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    const root = document.documentElement;
+    /* --- Theme toggle --- */
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    function isDark() {
+      const t = html.getAttribute('data-theme');
+      if (t === 'dark')  return true;
+      if (t === 'light') return false;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      const dark = !isDark();
+      html.setAttribute('data-theme', dark ? 'dark' : 'light');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    });
+
+    /* --- Mobile hamburger --- */
+    const hamburgerBtn = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+
+    hamburgerBtn.addEventListener('click', () => {
+      const open = navLinks.classList.toggle('open');
+      hamburgerBtn.setAttribute('aria-expanded', open.toString());
+    });
+
+    /* Close nav when a link is clicked */
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
 
     /* --- Typewriter effect --- */
     const phrases = [
@@ -1455,21 +1809,14 @@
       });
     });
 
-    /* --- Parallax dot grid on scroll --- */
-    const pseudoBefore = document.body;
-    let scrollY = 0;
+    /* --- Parallax dot grid on scroll (CSS variable approach) --- */
     window.addEventListener('scroll', () => {
-      scrollY = window.scrollY;
-      document.body.style.setProperty('--dot-offset-y', `${scrollY * 0.3}px`);
+      document.documentElement.style.setProperty('--dot-offset-y', `${window.scrollY * 0.3}px`);
     }, { passive: true });
 
-    /* Inject style for parallax dot grid */
+    /* Inject parallax style rule */
     const dotStyle = document.createElement('style');
-    dotStyle.textContent = `
-      body::before {
-        background-position: 0 var(--dot-offset-y, 0);
-      }
-    `;
+    dotStyle.textContent = `body::before { background-position: 0 var(--dot-offset-y, 0); }`;
     document.head.appendChild(dotStyle);
   </script>
 </body>
