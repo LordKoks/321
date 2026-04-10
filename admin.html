@@ -1675,12 +1675,31 @@ pytest tests/test_posts.py -v</div>
 
       const t0 = Date.now();
       try {
-        const res = await fetch(svc.checkUrl, { method: 'GET', mode: 'no-cors', cache: 'no-cache', signal: AbortSignal.timeout(4000) });
+        /* Same-origin paths (relative URLs) can be fetched normally and return
+           real status codes.  Cross-origin URLs (different host/port) must use
+           'no-cors' because the API may not have CORS headers — this returns an
+           opaque response, but a successful network connection still doesn't
+           throw, so connection-refused / timeout still maps to "Offline". */
+        const isCrossOrigin = svc.checkUrl.startsWith('http://') || svc.checkUrl.startsWith('https://');
+        const opts = {
+          method: 'GET',
+          cache: 'no-cache',
+          signal: AbortSignal.timeout(4000),
+          ...(isCrossOrigin ? { mode: 'no-cors' } : {}),
+        };
+        const res = await fetch(svc.checkUrl, opts);
         const ms = Date.now() - t0;
-        // no-cors always gives opaque, treat as ok if no error
-        cell.innerHTML = `<span class="ping-indicator ping-ok"><span class="d"></span>Online · ${ms}ms</span>`;
+        /* For same-origin: check HTTP status; for opaque (cross-origin no-cors):
+           any non-throwing response means the host is reachable. */
+        const ok = res.type === 'opaque' ? true : res.ok;
+        if (ok) {
+          cell.innerHTML = `<span class="ping-indicator ping-ok"><span class="d"></span>Online · ${ms}ms</span>`;
+        } else {
+          cell.innerHTML = `<span class="ping-indicator ping-err"><span class="d"></span>HTTP ${res.status}</span>`;
+        }
       } catch(e) {
-        cell.innerHTML = `<span class="ping-indicator ping-err"><span class="d"></span>Offline</span>`;
+        const label = e.name === 'TimeoutError' ? 'Timeout' : 'Offline';
+        cell.innerHTML = `<span class="ping-indicator ping-err"><span class="d"></span>${label}</span>`;
       }
     }
 
